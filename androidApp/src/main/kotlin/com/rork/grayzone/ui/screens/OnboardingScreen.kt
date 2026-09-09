@@ -94,6 +94,7 @@ fun OnboardingScreen(vm: GrayzoneViewModel, onDone: () -> Unit) {
 
                     waitingForPermission = false
 
+                    
                     vm.completeOnboarding(
                         selected.toList(),
                         allowance
