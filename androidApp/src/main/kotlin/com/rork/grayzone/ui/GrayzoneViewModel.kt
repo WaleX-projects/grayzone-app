@@ -1,6 +1,10 @@
 package com.rork.grayzone.ui
 
+import android.content.Context
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.rork.grayzone.data.GrayzoneDatabase
+import com.rork.grayzone.data.UsageRepository
 import com.rork.grayzone.ui.models.FrictionLevel
 import com.rork.grayzone.ui.models.GrayzoneState
 import com.rork.grayzone.ui.models.KnownApps
@@ -10,13 +14,30 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 /**
  * Single source of truth for the prototype. All screens share one instance
  * scoped to the Activity so quota, apps and settings stay consistent.
  */
-class GrayzoneViewModel : ViewModel() {
+class GrayzoneViewModel(
+    context: Context? = null
+) : ViewModel() {
+    private var repository: UsageRepository? = null
+
+    init {
+        context?.let {
+            val db = GrayzoneDatabase.getInstance(it)
+            repository = UsageRepository(
+                context = it,
+                monitoredAppDao = db.monitoredAppDao(),
+                usageSessionDao = db.usageSessionDao()
+            )
+            // Load monitored apps from database
+            loadMonitoredAppsFromDb()
+        }
+    }
 
     private val _state = MutableStateFlow(
         GrayzoneState(
@@ -146,5 +167,58 @@ class GrayzoneViewModel : ViewModel() {
                 stoppedAfterFriction = if (stoppedAfterFriction) s.stoppedAfterFriction + 1 else s.stoppedAfterFriction
             )
         }
+    }
+
+    // === Database operations ===
+
+    private fun loadMonitoredAppsFromDb() {
+        viewModelScope.launch {
+            repository?.let { repo ->
+                repo.getAllApps().collect { monitoredApps ->
+                    _state.update { state ->
+                        // Convert DB entities to UI models
+                        val uiApps = monitoredApps.map { dbApp ->
+                            ProtectedApp(
+                                id = "db_${dbApp.packageName}",
+                                name = dbApp.displayName,
+                                isProtected = dbApp.enabled,
+                                dailyLimitMin = dbApp.dailyLimitMinutes,
+                                usedTodayMin = 0
+                            )
+                        }
+                        state.copy(apps = uiApps)
+                    }
+                }
+            }
+        }
+    }
+
+    suspend fun addAppToMonitoring(
+        packageName: String,
+        displayName: String,
+        dailyLimitMinutes: Int = 60,
+        interventionThresholdMinutes: Int = 18
+    ) {
+        repository?.addMonitoredApp(
+            packageName = packageName,
+            displayName = displayName,
+            dailyLimitMinutes = dailyLimitMinutes,
+            interventionThresholdMinutes = interventionThresholdMinutes
+        )
+    }
+
+    suspend fun updateAppThreshold(packageName: String, newThresholdMinutes: Int) {
+        val app = repository?.getMonitoredAppByPackageName(packageName)
+        if (app != null) {
+            repository?.updateMonitoredApp(
+                app.copy(interventionThresholdMinutes = newThresholdMinutes)
+            )
+        }
+    }
+
+    fun getCurrentUsageForApp(packageName: String): Int {
+        // Get usage from state for now
+        val app = _state.value.apps.find { it.id.endsWith(packageName) }
+        return app?.usedTodayMin ?: 0
     }
 }

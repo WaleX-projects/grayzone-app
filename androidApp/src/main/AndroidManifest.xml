@@ -3,6 +3,10 @@
 
     <!-- Permission to read app usage/foreground-app information -->
     <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" />
+    
+    <!-- Permission for foreground service -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 
     <application
         android:allowBackup="true"
@@ -22,6 +26,17 @@
             </intent-filter>
 
         </activity>
+
+        <activity
+            android:exported="false"
+            android:name=".InterventionActivity"
+            android:theme="@android:style/Theme.NoTitleBar.Fullscreen" />
+
+        <service
+            android:name=".UsageTrackingService"
+            android:enabled="true"
+            android:exported="false"
+            android:foregroundServiceType="specialUse" />
 
     </application>
 

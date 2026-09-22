@@ -1,6 +1,7 @@
 [versions]
 agp = "9.0.1"
 kotlin = "2.4.10"
+ksp = "2.4.10-1.0.24"
 
 android-compileSdk = "36"
 android-minSdk = "24"
@@ -11,6 +12,7 @@ androidx-activity = "1.13.0"
 androidx-appcompat = "1.8.0"
 androidx-lifecycle = "2.11.0-beta01"
 androidx-navigation = "2.9.6"
+androidx-room = "2.6.1"
 
 compose-bom = "2026.06.01"
 material3 = "1.4.0"
@@ -70,6 +72,17 @@ androidx-material3 = { module = "androidx.compose.material3:material3", version.
 androidx-material-icons-extended = { module = "androidx.compose.material:material-icons-extended", version.ref = "material-icons" }
 
 androidx-navigation-compose = { module = "androidx.navigation:navigation-compose", version.ref = "androidx-navigation" }
+
+
+# -------------------------
+# Room
+# -------------------------
+
+androidx-room-runtime = { module = "androidx.room:room-runtime", version.ref = "androidx-room" }
+
+androidx-room-compiler = { module = "androidx.room:room-compiler", version.ref = "androidx-room" }
+
+androidx-room-ktx = { module = "androidx.room:room-ktx", version.ref = "androidx-room" }
 
 
 # -------------------------
@@ -155,3 +168,7 @@ kotlinMultiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref =
 composeMultiplatform = { id = "org.jetbrains.compose", version.ref = "composeMultiplatform" }
 
 composeCompiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+
+room = { id = "androidx.room", version.ref = "androidx-room" }
+
+ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }

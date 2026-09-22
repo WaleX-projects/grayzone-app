@@ -31,7 +31,7 @@ fun AppNavigation() {
         }
     }
 
-    NavHost(navController = navController, startDestination = "onboarding") {
+    NavHost(navController = navController, startDestination = "home") {
         composable("onboarding") {
             OnboardingScreen(
                 vm = vm,
